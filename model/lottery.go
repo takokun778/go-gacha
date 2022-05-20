@@ -1,5 +1,6 @@
 package model
 
-const MaxLottery = 1000
-
-type LotteryNumber int
+const (
+	MaxLotteryVolume = 10000
+	MaxLotteryCount  = 100
+)

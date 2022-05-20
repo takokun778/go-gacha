@@ -15,3 +15,7 @@ func NewCardRate(
 
 	return CardRate(value), nil
 }
+
+func (r CardRate) Value() float64 {
+	return float64(r)
+}

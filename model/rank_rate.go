@@ -57,6 +57,10 @@ func init() {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+
+	if CRate < 0 {
+		log.Fatalln("C rate is negative")
+	}
 }
 
 type RankRate float64
@@ -68,4 +72,8 @@ func NewRankRate(
 		return RankRate(-1), errors.New("max rate over")
 	}
 	return RankRate(value), nil
+}
+
+func (r RankRate) Value() float64 {
+	return float64(r)
 }
