@@ -1,4 +1,4 @@
-package csv
+package model
 
 import (
 	"encoding/csv"
@@ -13,7 +13,7 @@ const (
 	column1 = "rate"
 )
 
-func Import(name string) ([][]string, error) {
+func ImportCSV(name string) ([][]string, error) {
 	f, err := os.Open(name)
 	if err != nil {
 		return nil, err

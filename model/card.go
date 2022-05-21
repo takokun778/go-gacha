@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"gacha/csv"
 	"strconv"
 )
 
@@ -30,7 +29,7 @@ func NewCard(
 func GenerateCardsFromCsvFile(rank Rank) ([]Card, error) {
 	file := fmt.Sprintf("data/%s.csv", rank.String())
 
-	records, err := csv.Import(file)
+	records, err := ImportCSV(file)
 	if err != nil {
 		return nil, err
 	}
