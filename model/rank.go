@@ -20,9 +20,9 @@ func LotteryRankRate() Rank {
 	switch {
 	case value < SRate.Value()/MaxRankRate:
 		return S
-	case SRate.Value()/MaxRankRate < value || value > (SRate.Value()+ARate.Value())/MaxRankRate:
+	case SRate.Value()/MaxRankRate <= value && value < (SRate.Value()+ARate.Value())/MaxRankRate:
 		return A
-	case (SRate.Value()+ARate.Value())/MaxRankRate < value || value > (SRate.Value()+ARate.Value()+BRate.Value())/MaxRankRate:
+	case (SRate.Value()+ARate.Value())/MaxRankRate <= value && value < (SRate.Value()+ARate.Value()+BRate.Value())/MaxRankRate:
 		return B
 	default:
 		return C

@@ -47,7 +47,22 @@ func (c *Card) Save(ctx context.Context, cards []model.Card) error {
 }
 
 func (c *Card) Find(ctx context.Context, id model.CardID) (model.Card, error) {
-	return model.Card{}, nil
+	card := new(Cards)
+
+	err := c.Client.DB.NewSelect().
+		Model(card).
+		Where("id = ?", string(id)).
+		Scan(ctx)
+	if err != nil {
+		return model.Card{}, err
+	}
+
+	return model.Card{
+		ID:   model.CardID(card.ID),
+		Name: card.Name,
+		Rank: model.Rank(card.Rank),
+		Rate: model.CardRate(card.Rate),
+	}, nil
 }
 
 func (c *Card) FindAll(ctx context.Context) ([]model.Card, error) {

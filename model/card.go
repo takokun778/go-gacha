@@ -28,7 +28,7 @@ func NewCard(
 }
 
 func GenerateCardsFromCsvFile(rank Rank) ([]Card, error) {
-	file := fmt.Sprintf("%s.csv", rank.String())
+	file := fmt.Sprintf("data/%s.csv", rank.String())
 
 	records, err := csv.Import(file)
 	if err != nil {

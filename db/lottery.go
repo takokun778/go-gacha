@@ -26,9 +26,20 @@ func NewLottery(client *Client) repository.Lottery {
 }
 
 func (l *Lottery) Lotto(ctx context.Context, rank model.Rank) (model.CardID, error) {
-	l.Client.DB.ExecContext(ctx, "")
+	lottery := new(Lotteries)
 
-	return model.CardID(""), nil
+	err := l.Client.DB.NewSelect().
+		Model(lottery).
+		Where("rank = ?", rank.String()).
+		OrderExpr("random()").
+		Limit(1).
+		Scan(ctx)
+
+	if err != nil {
+		return model.CardID(""), err
+	}
+
+	return model.CardID(lottery.CardID), nil
 }
 
 func (l *Lottery) Save(ctx context.Context, rank model.Rank, ids []model.CardID) error {
@@ -42,14 +53,6 @@ func (l *Lottery) Save(ctx context.Context, rank model.Rank, ids []model.CardID)
 	}
 
 	if _, err := l.Client.DB.NewInsert().Model(&lotteries).Exec(ctx); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (l *Lottery) DeleteAll(ctx context.Context) error {
-	if _, err := l.Client.DB.NewDelete().Model((*Lotteries)(nil)).Exec(ctx); err != nil {
 		return err
 	}
 
