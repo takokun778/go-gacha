@@ -4,10 +4,12 @@ A_RATE := 10
 B_RATE := 30
 DSN := postgres://postgres:@localhost:54321/postgres?sslmode=disable
 
-.PHONY: db
+.PHONY: db design
 
 run:
 	@go run main.go
+design:
+	@goa gen gacha/design
 db:
 	@docker run --rm -d \
 		-p 54321:5432 \
