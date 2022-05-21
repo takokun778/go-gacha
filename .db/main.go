@@ -14,57 +14,33 @@ func main() {
 
 	ctx := context.Background()
 
-	_, err = client.DB.NewDropTable().
-		Model((*db.Cards)(nil)).
-		IfExists().
-		Exec(ctx)
+	card := db.NewCardMigrator(client)
 
-	if err != nil {
+	if err := card.DropTable(ctx); err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	_, err = client.DB.NewCreateTable().
-		Model((*db.Cards)(nil)).
-		IfNotExists().
-		Exec(ctx)
-
-	if err != nil {
+	if err := card.CreateTable(ctx); err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	_, err = client.DB.NewDropTable().
-		Model((*db.Lotteries)(nil)).
-		IfExists().
-		Exec(ctx)
+	history := db.NewHistoryMigrator(client)
 
-	if err != nil {
+	if err := history.DropTable(ctx); err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	_, err = client.DB.NewCreateTable().
-		Model((*db.Lotteries)(nil)).
-		IfNotExists().
-		Exec(ctx)
-
-	if err != nil {
+	if err := history.CreateTable(ctx); err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	_, err = client.DB.NewDropTable().
-		Model((*db.Histories)(nil)).
-		IfExists().
-		Exec(ctx)
+	lottery := db.NewLotteryMigrator(client)
 
-	if err != nil {
+	if err := lottery.DropTable(ctx); err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	_, err = client.DB.NewCreateTable().
-		Model((*db.Histories)(nil)).
-		IfNotExists().
-		Exec(ctx)
-
-	if err != nil {
+	if err := lottery.CreateTable(ctx); err != nil {
 		log.Fatalln(err.Error())
 	}
 }

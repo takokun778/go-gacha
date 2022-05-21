@@ -2,13 +2,14 @@ package db
 
 import (
 	"context"
+	"gacha/.db/table"
 	"gacha/model"
 	"gacha/repository"
 
 	"github.com/uptrace/bun"
 )
 
-type Cards struct {
+type CardTable struct {
 	bun.BaseModel `bun:"table:cards"`
 
 	ID   string  `bun:"id,pk"`
@@ -18,20 +19,20 @@ type Cards struct {
 }
 
 type Card struct {
-	Client *Client
+	client *Client
 }
 
 func NewCard(client *Client) repository.Card {
 	return &Card{
-		Client: client,
+		client: client,
 	}
 }
 
 func (c *Card) Save(ctx context.Context, cards []model.Card) error {
-	items := make([]Cards, 0, len(cards))
+	items := make([]CardTable, 0, len(cards))
 
 	for _, c := range cards {
-		items = append(items, Cards{
+		items = append(items, CardTable{
 			ID:   string(c.ID),
 			Name: c.Name,
 			Rank: c.Rank.String(),
@@ -39,7 +40,7 @@ func (c *Card) Save(ctx context.Context, cards []model.Card) error {
 		})
 	}
 
-	if _, err := c.Client.DB.NewInsert().Model(&items).Exec(ctx); err != nil {
+	if _, err := c.client.DB.NewInsert().Model(&items).Exec(ctx); err != nil {
 		return err
 	}
 
@@ -47,9 +48,9 @@ func (c *Card) Save(ctx context.Context, cards []model.Card) error {
 }
 
 func (c *Card) Find(ctx context.Context, id model.CardID) (model.Card, error) {
-	card := new(Cards)
+	card := new(CardTable)
 
-	err := c.Client.DB.NewSelect().
+	err := c.client.DB.NewSelect().
 		Model(card).
 		Where("id = ?", string(id)).
 		Scan(ctx)
@@ -67,4 +68,34 @@ func (c *Card) Find(ctx context.Context, id model.CardID) (model.Card, error) {
 
 func (c *Card) FindAll(ctx context.Context) ([]model.Card, error) {
 	return nil, nil
+}
+
+func NewCardMigrator(
+	client *Client,
+) table.Card {
+	return &Card{
+		client: client,
+	}
+}
+
+func (c *Card) CreateTable(ctx context.Context) error {
+	if _, err := c.client.DB.NewCreateTable().
+		Model((*CardTable)(nil)).
+		IfNotExists().
+		Exec(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Card) DropTable(ctx context.Context) error {
+	if _, err := c.client.DB.NewDropTable().
+		Model((*CardTable)(nil)).
+		IfExists().
+		Exec(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }
