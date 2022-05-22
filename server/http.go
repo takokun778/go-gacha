@@ -4,6 +4,8 @@ import (
 	"context"
 	gacha "gacha/gen/gacha"
 	gachasvr "gacha/gen/http/gacha/server"
+	initialsvr "gacha/gen/http/initial/server"
+	initial "gacha/gen/initial"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,7 +20,7 @@ import (
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func HandleHTTPServer(ctx context.Context, u *url.URL, gachaEndpoints *gacha.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
+func HandleHTTPServer(ctx context.Context, u *url.URL, initialEndpoints *initial.Endpoints, gachaEndpoints *gacha.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
 
 	// Setup goa log adapter.
 	var (
@@ -49,19 +51,23 @@ func HandleHTTPServer(ctx context.Context, u *url.URL, gachaEndpoints *gacha.End
 	// the service input and output data structures to HTTP requests and
 	// responses.
 	var (
-		gachaServer *gachasvr.Server
+		initialServer *initialsvr.Server
+		gachaServer   *gachasvr.Server
 	)
 	{
 		eh := errorHandler(logger)
+		initialServer = initialsvr.New(initialEndpoints, mux, dec, enc, eh, nil)
 		gachaServer = gachasvr.New(gachaEndpoints, mux, dec, enc, eh, nil)
 		if debug {
 			servers := goahttp.Servers{
+				initialServer,
 				gachaServer,
 			}
 			servers.Use(httpmdlwr.Debug(mux, os.Stdout))
 		}
 	}
 	// Configure the mux.
+	initialsvr.Mount(mux, initialServer)
 	gachasvr.Mount(mux, gachaServer)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
@@ -75,6 +81,9 @@ func HandleHTTPServer(ctx context.Context, u *url.URL, gachaEndpoints *gacha.End
 	// Start HTTP server using default configuration, change the code to
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: u.Host, Handler: handler}
+	for _, m := range initialServer.Mounts {
+		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
+	}
 	for _, m := range gachaServer.Mounts {
 		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}

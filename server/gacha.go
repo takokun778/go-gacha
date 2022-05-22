@@ -34,9 +34,10 @@ func (s *gachasrvc) Draw(ctx context.Context, p int) (res []*gacha.Card, err err
 	res = make([]*gacha.Card, 0, len(cards))
 
 	for _, c := range cards {
+		name := c.Name
 		rank := c.Rank.String()
 		res = append(res, &gacha.Card{
-			Name: &c.Name,
+			Name: &name,
 			Rank: &rank,
 		})
 	}

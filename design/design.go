@@ -14,6 +14,19 @@ var _ = API("gacha", func() {
 	})
 })
 
+var _ = Service("Initial", func() {
+	Description("initialize the gacha")
+
+	Method("init", func() {
+		Result(Empty)
+
+		HTTP(func() {
+			POST("/api/v1/init")
+			Response(StatusOK)
+		})
+	})
+})
+
 var _ = Service("Gacha", func() {
 	Description("draw the gacha")
 

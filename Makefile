@@ -10,6 +10,8 @@ run:
 	@go run main.go
 design:
 	@goa gen gacha/design
+example:
+	@goa example gacha/design
 db:
 	@docker run --rm -d \
 		-p 54321:5432 \

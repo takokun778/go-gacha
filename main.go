@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gacha/db"
 	"gacha/gen/gacha"
+	"gacha/gen/initial"
 	"gacha/server"
 	"gacha/usecase"
 	"log"
@@ -39,21 +40,33 @@ func main() {
 
 	// Initialize the services.
 	var (
-		gachaSvc gacha.Service
+		initialSvc initial.Service
+		gachaSvc   gacha.Service
 	)
 	{
 		client, err := db.NewClient(false)
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
+
 		card := db.NewCard(client)
+
 		lottery := db.NewLottery(client)
+
 		history := db.NewHistory(client)
+
 		ug := usecase.NewGacha(
 			card,
 			lottery,
 			history,
 		)
+
+		ui := usecase.NewInitial(
+			card,
+			lottery,
+		)
+
+		initialSvc = server.NewInitial(ui, logger)
 
 		gachaSvc = server.NewGacha(ug, logger)
 	}
@@ -61,9 +74,11 @@ func main() {
 	// Wrap the services in endpoints that can be invoked from other services
 	// potentially running in different processes.
 	var (
-		gachaEndpoints *gacha.Endpoints
+		initialEndpoints *initial.Endpoints
+		gachaEndpoints   *gacha.Endpoints
 	)
 	{
+		initialEndpoints = initial.NewEndpoints(initialSvc)
 		gachaEndpoints = gacha.NewEndpoints(gachaSvc)
 	}
 
@@ -108,7 +123,7 @@ func main() {
 			} else if u.Port() == "" {
 				u.Host = net.JoinHostPort(u.Host, "80")
 			}
-			server.HandleHTTPServer(ctx, u, gachaEndpoints, &wg, errc, logger, *dbgF)
+			server.HandleHTTPServer(ctx, u, initialEndpoints, gachaEndpoints, &wg, errc, logger, *dbgF)
 		}
 
 	default:
